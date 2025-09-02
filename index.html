@@ -21,11 +21,11 @@
   button{ appearance:none; border:none; cursor:pointer; font-weight:700; border-radius:12px; padding:10px 14px; color:#0b1233;
     background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 8px 20px rgba(134,168,255,.25); transition:transform .05s ease }
   button:active{ transform:translateY(1px) scale(.99) }
-  .type{ border-right:2px solid var(--accent); white-space:pre-wrap }
+  .type{ border-right:2px solid var(--accent); white-space:pre-wrap; min-height: 1.6em; }
   .tag{ display:inline-block; padding:3px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px; margin-bottom:8px }
   footer{ color:var(--muted); font-size:12px; text-align:center; padding:10px }
   .headcopy{ position:relative; z-index:1 }
-  @media (max-width:480px){ h1{ font-size:22px } .lead{ font-size:16px } }
+  @media (max-width:480px){ h1{ font-size:22px } .lead{ font-size:16px } .row{ flex-direction: column; } }
 </style>
 </head>
 <body>
@@ -42,7 +42,7 @@
     <div class="tag">🎯 今天的巴zei同学开心了吗？</div>
     <p id="quote" class="type"></p>
     <div class="row">
-      <button id="btnNew" onclick="newQuote(); event.stopPropagation()">长得帅的都点我</button>
+      <button id="btnNew">长得帅的都点我</button>
       <button id="btnFire">放烟花 ✨</button>
       <span class="muted" style="align-self:center">手机上：轻触页面任意处也能放烟花</span>
     </div>
@@ -65,7 +65,7 @@
   "躺平不是摆烂，是休养生息～",
   "巴zei同学值得拥有世界上所有的好东西。",
   "你不会有过不去的坎，因为你的腿不够短。",
-  "大方向你已经完事儿了，现在需要的是享受！享受懂吗！"
+  "大方向你已经完事儿了，现在需要的是享受！享受人生！咱快乐就完事儿了！！"
 ]
 </script>
 
@@ -83,12 +83,32 @@
     QUOTES = ["文案解析失败，但你依然很酷。"];
   }
 
+  // 存储定时器引用
+  let typeTimer = null;
+  
   function typeText(el, text, speed=18){
-    let i=0; el.textContent="";
-    const t=setInterval(()=>{
-      el.textContent += text[i]||"";
-      i++;
-      if(i>text.length){ clearInterval(t); }
+    // 清除之前的定时器
+    if (typeTimer) {
+      clearInterval(typeTimer);
+      typeTimer = null;
+    }
+    
+    let i=0; 
+    el.textContent="";
+    
+    // 移除旧的光标闪烁效果
+    el.classList.remove("type");
+    void el.offsetWidth; // 触发重绘
+    el.classList.add("type");
+    
+    typeTimer = setInterval(()=>{
+      if(i < text.length){
+        el.textContent += text[i];
+        i++;
+      } else {
+        clearInterval(typeTimer);
+        typeTimer = null;
+      }
     }, speed);
   }
 
@@ -96,7 +116,6 @@
     const pick = QUOTES[Math.floor(Math.random()*QUOTES.length)];
     typeText(elQuote, pick);
   }
-  btnNew.addEventListener("click", e=>{ e.stopPropagation(); newQuote(); });
 
   // 屏幕适配
   let W=0,H=0, DPR = Math.min(2, devicePixelRatio || 1);
@@ -108,8 +127,7 @@
   function triggerFire(e){ const p = pagePos(e); fireworks(p.x, p.y); }
   document.addEventListener("click", triggerFire);
   document.addEventListener("touchstart", triggerFire, {passive:true});
-  btnFire.addEventListener("click", e=>{ e.stopPropagation(); fireworks(innerWidth/2, innerHeight/2); });
-
+  
   const particles=[];
   function fireworks(x,y){
     const cx = x*DPR, cy = y*DPR;
@@ -122,6 +140,7 @@
     }
     particles.push({x:cx,y:cy,vx:0,vy:0,life:25,color:"#ffffff",size:4});
   }
+  
   function tick(){
     ctx.clearRect(0,0,W,H);
     for(let i=particles.length-1;i>=0;i--){
@@ -135,7 +154,22 @@
   }
   tick();
 
-  (function init(){ elYear.textContent = new Date().getFullYear(); newQuote(); })();
+  // 初始化
+  (function init(){ 
+    elYear.textContent = new Date().getFullYear(); 
+    newQuote(); 
+    
+    // 添加事件监听
+    btnNew.addEventListener("click", e=>{ 
+      e.stopPropagation(); 
+      newQuote(); 
+    });
+    
+    btnFire.addEventListener("click", e=>{ 
+      e.stopPropagation(); 
+      fireworks(innerWidth/2, innerHeight/2); 
+    });
+  })();
 </script>
 </body>
 </html>

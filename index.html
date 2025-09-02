@@ -24,15 +24,13 @@
   .type{ border-right:2px solid var(--accent); white-space:pre-wrap }
   .tag{ display:inline-block; padding:3px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px; margin-bottom:8px }
   footer{ color:var(--muted); font-size:12px; text-align:center; padding:10px }
-  .ribbon{ position:absolute; right:-34px; top:12px; transform:rotate(35deg); background:#24305a; color:#c9d5ff; padding:6px 58px; border:1px solid var(--line); z-index:0; pointer-events:none }
   .headcopy{ position:relative; z-index:1 }
-  @media (max-width:480px){ .ribbon{ transform:scale(.8) rotate(35deg); right:-52px; top:6px } h1{ font-size:22px } .lead{ font-size:16px } }
+  @media (max-width:480px){ h1{ font-size:22px } .lead{ font-size:16px } }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="card">
-    <div class="ribbon">横扫emo，活力无限</div>
     <div class="headcopy">
       <h1>哦莫，<span id="toName">是谁在发光！</span>好闪！ ✨</h1>
       <p class="lead">原来是唱歌又好听、长得又好看、游戏还打得好的 <b>全世界最好的 巴zei 同学</b>呀！</p>
@@ -55,7 +53,7 @@
 
 <canvas id="fx" style="position:fixed;inset:0;pointer-events:none"></canvas>
 
-<!-- 文案放到 JSON；你只改这里，别改 JS 引号 -->
+<!-- 文案存 JSON，避免引号被破坏 -->
 <script type="application/json" id="quotes-json">
 [
   "卧槽，瞧瞧，这是谁？是全世界最好的巴zei同学！",
@@ -77,12 +75,12 @@
   const btnNew=$("#btnNew"), btnFire=$("#btnFire");
   const canvas=$("#fx"), ctx=canvas.getContext("2d");
 
-  // 安全解析 JSON 文案（避免输入法改引号）
+  // 解析 JSON 文案
   let QUOTES=[];
   try{
     QUOTES = JSON.parse(document.getElementById('quotes-json').textContent.trim());
   }catch(e){
-    QUOTES = ["文案解析失败，但你依然很酷。请检查 quotes-json 里的引号是否被改成了奇怪的样式～"];
+    QUOTES = ["文案解析失败，但你依然很酷。"];
   }
 
   function typeText(el, text, speed=18){

@@ -19,13 +19,33 @@
   .muted{ color:var(--muted); font-size:14px }
   .row{ display:flex; gap:12px; flex-wrap:wrap }
   button{ appearance:none; border:none; cursor:pointer; font-weight:700; border-radius:12px; padding:10px 14px; color:#0b1233;
-    background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 8px 20px rgba(134,168,255,.25); transition:transform .05s ease }
+    background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 8px 20px rgba(134,168,255,.25); transition:transform .05s ease;
+    position:relative; overflow:hidden; }
   button:active{ transform:translateY(1px) scale(.99) }
+  button::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+    transition: 0.5s;
+  }
+  button:hover::after {
+    left: 100%;
+  }
   .type{ border-right:2px solid var(--accent); white-space:pre-wrap; min-height: 1.6em; }
   .tag{ display:inline-block; padding:3px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px; margin-bottom:8px }
   footer{ color:var(--muted); font-size:12px; text-align:center; padding:10px }
   .headcopy{ position:relative; z-index:1 }
-  @media (max-width:480px){ h1{ font-size:22px } .lead{ font-size:16px } .row{ flex-direction: column; } }
+  .counter{ position:absolute; right:16px; bottom:16px; font-size:12px; color:var(--muted); }
+  @media (max-width:480px){ 
+    h1{ font-size:22px } 
+    .lead{ font-size:16px } 
+    .row{ flex-direction: column; } 
+    .counter{ position:static; margin-top:8px; }
+  }
 </style>
 </head>
 <body>
@@ -46,6 +66,7 @@
       <button id="btnFire">放烟花 ✨</button>
       <span class="muted" style="align-self:center">手机上：轻触页面任意处也能放烟花</span>
     </div>
+    <div id="counter" class="counter">已展示: 0/10</div>
   </div>
 
   <footer>© <span id="year"></span> 遇事不要慌，还能找丫丫</footer>
@@ -65,13 +86,13 @@
   "躺平不是摆烂，是休养生息～",
   "巴zei同学值得拥有世界上所有的好东西。",
   "你不会有过不去的坎，因为你的腿不够短。",
-  "大方向你已经完事儿了，现在需要的是享受！享受人生！咱快乐就完事儿了！！"
+  "大方向你已经完事儿了，现在需要的是享受！享受懂吗！"
 ]
 </script>
 
 <script>
   const $ = s => document.querySelector(s);
-  const elQuote=$("#quote"), elYear=$("#year");
+  const elQuote=$("#quote"), elYear=$("#year"), elCounter=$("#counter");
   const btnNew=$("#btnNew"), btnFire=$("#btnFire");
   const canvas=$("#fx"), ctx=canvas.getContext("2d");
 
@@ -83,8 +104,15 @@
     QUOTES = ["文案解析失败，但你依然很酷。"];
   }
 
-  // 存储定时器引用
+  // 存储定时器引用和已使用的文案索引
   let typeTimer = null;
+  let usedIndices = new Set();
+  let currentIndex = -1;
+  
+  // 更新计数器显示
+  function updateCounter() {
+    elCounter.textContent = `已展示: ${usedIndices.size}/${QUOTES.length}`;
+  }
   
   function typeText(el, text, speed=18){
     // 清除之前的定时器
@@ -113,8 +141,29 @@
   }
 
   function newQuote(){
-    const pick = QUOTES[Math.floor(Math.random()*QUOTES.length)];
-    typeText(elQuote, pick);
+    // 如果所有文案都已使用过，重置
+    if (usedIndices.size >= QUOTES.length) {
+      usedIndices.clear();
+    }
+    
+    // 创建一个可用索引数组
+    const availableIndices = [];
+    for (let i = 0; i < QUOTES.length; i++) {
+      if (!usedIndices.has(i) && i !== currentIndex) {
+        availableIndices.push(i);
+      }
+    }
+    
+    // 随机选择一个可用索引
+    if (availableIndices.length > 0) {
+      const randomIndex = Math.floor(Math.random() * availableIndices.length);
+      currentIndex = availableIndices[randomIndex];
+      usedIndices.add(currentIndex);
+      
+      const pick = QUOTES[currentIndex];
+      typeText(elQuote, pick);
+      updateCounter();
+    }
   }
 
   // 屏幕适配

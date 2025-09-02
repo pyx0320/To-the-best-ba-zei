@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
-<title>这个网站只有敲帅der的人才会看见</title>
+<title>屠龙宝刀，点击就送，帅的点了才送</title>
 <style>
   :root{
     --bg:#0f1325;--panel:#182039;--line:#26325d;--text:#eaf0ff;--muted:#a8b2d2;
@@ -21,8 +21,8 @@
   }
   .wrap{width:min(860px,100%);margin:20px auto;display:grid;gap:14px;padding:0 14px}
   .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    border:1px solid var(--line);border-radius:14px;padding:16px}
-  h1{margin:0 0 6px;font-size:24px}
+    border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;overflow:hidden}
+  h1{margin:0 0 6px;font-size:24px;line-height:1.35}
   .lead{margin:6px 0 0;font-size:18px;font-weight:600;letter-spacing:.2px}
   .muted{color:var(--muted);font-size:14px}
   .row{display:flex;gap:12px;flex-wrap:wrap}
@@ -38,31 +38,47 @@
   .tag{display:inline-block;padding:3px 10px;border:1px solid var(--line);
     border-radius:999px;color:var(--muted);font-size:12px;margin-bottom:8px}
   footer{color:var(--muted);font-size:12px;text-align:center;padding:10px}
-  .ribbon{position:absolute;right:-34px;top:12px;transform:rotate(35deg);
-    background:#24305a;color:#c9d5ff;padding:6px 58px;border:1px solid var(--line)}
-  header{position:relative}
+
+  /* 关键：让丝带在下面，文字在上面 */
+  .ribbon{
+    position:absolute; right:-34px; top:12px;
+    transform:rotate(35deg);
+    background:#24305a; color:#c9d5ff; padding:6px 58px;
+    border:1px solid var(--line);
+    z-index:0; pointer-events:none; /* 不拦截触摸 */
+  }
+  .headcopy{ position:relative; z-index:1; } /* 标题层级更高 */
+
+  /* 小屏优化：缩小丝带 & 调整位置，标题略小一点 */
+  @media (max-width: 480px){
+    .ribbon{ transform:scale(.8) rotate(35deg); right:-52px; top:6px; }
+    h1{ font-size:22px; }
+    .lead{ font-size:16px; }
+  }
 </style>
 </head>
 <body>
 <div class="wrap">
   <header class="card">
     <div class="ribbon">横扫emo，活力无限</div>
-    <h1>哦莫，<span id="toName">是谁在发光！</span>好闪！ ✨</h1>
-    <p class="lead">原来是唱歌又好听、长得又好看、游戏还打得好的 <b>全世界最好的 巴zei 同学</b>呀！</p>
-    <div class="muted">努力的巴zei同学很酷，但是能停下来发发呆看看云的巴zei同学更！是！超！级！酷！</div>
+    <div class="headcopy">
+      <h1>哦莫，<span id="toName">是谁在发光！</span>好闪！ ✨</h1>
+      <p class="lead">原来是唱歌又好听、长得又好看、游戏还打得好的 <b>全世界最好的 巴zei 同学</b>呀！</p>
+      <div class="muted">努力的巴zei同学很酷，但是能停下来发发呆看看云的巴zei同学更！是！超！级！酷！</div>
+    </div>
   </header>
 
   <div class="card">
     <div class="tag">🎯 今天的巴zei同学开心了吗？</div>
     <p id="quote" class="type"></p>
     <div class="row">
-      <button id="btnNew">长得帅的都点我</button>
+      <button id="btnNew" onclick="newQuote(); event.stopPropagation()">长得帅的都点我</button>
       <button id="btnFire">放烟花 ✨</button>
       <span class="muted" style="align-self:center">手机上：轻触页面任意处也能放烟花</span>
     </div>
   </div>
 
-  <footer>© <span id="year"></span> 微光站 · 来自在乎你的人 · 你永远不必独自面对</footer>
+  <footer>© <span id="year"></span> 遇事不要慌，还能找丫丫</footer>
 </div>
 
 <canvas id="fx" style="position:fixed;inset:0;pointer-events:none"></canvas>
@@ -96,8 +112,12 @@
     }, speed);
   }
 
-  function newQuote(){ typeText(elQuote, QUOTES[Math.floor(Math.random()*QUOTES.length)]); }
-  btnNew.addEventListener("click", newQuote);
+  function newQuote(){
+    const pick = QUOTES[Math.floor(Math.random()*QUOTES.length)];
+    typeText(elQuote, pick);
+  }
+  // 事件绑定（有 onclick 兜底，但这也保留）
+  btnNew.addEventListener("click", e=>{ e.stopPropagation(); newQuote(); });
 
   // —— 屏幕适配 —— 
   let W=0,H=0, DPR = Math.min(2, devicePixelRatio || 1);

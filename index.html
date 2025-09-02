@@ -2,59 +2,31 @@
 <html lang="zh-CN">
 <head>
 <meta charset="utf-8" />
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1" />
 <title>屠龙宝刀，点击就送，帅的点了才送</title>
 <style>
-  :root{
-    --bg:#0f1325;--panel:#182039;--line:#26325d;--text:#eaf0ff;--muted:#a8b2d2;
-    --accent:#86a8ff;--accent2:#9df0d7;
-  }
+  :root{ --bg:#0f1325;--panel:#182039;--line:#26325d;--text:#eaf0ff;--muted:#a8b2d2; --accent:#86a8ff;--accent2:#9df0d7; }
   *{box-sizing:border-box}
-  html,body{
-    min-height:100%;
-    background:
-      radial-gradient(1000px 600px at 10% -10%, #1b2350 0, transparent 60%),
-      radial-gradient(900px 500px at 110% 10%, #232f5f 0, transparent 60%), var(--bg);
-    color:var(--text);
-    font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,"Microsoft YaHei",sans-serif;
-    margin:0
-  }
-  .wrap{width:min(860px,100%);margin:20px auto;display:grid;gap:14px;padding:0 14px}
-  .card{background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01));
-    border:1px solid var(--line);border-radius:14px;padding:16px;position:relative;overflow:hidden}
-  h1{margin:0 0 6px;font-size:24px;line-height:1.35}
-  .lead{margin:6px 0 0;font-size:18px;font-weight:600;letter-spacing:.2px}
-  .muted{color:var(--muted);font-size:14px}
-  .row{display:flex;gap:12px;flex-wrap:wrap}
-  button{
-    appearance:none;border:none;cursor:pointer;font-weight:700;border-radius:12px;
-    padding:10px 14px;color:#0b1233;
-    background:linear-gradient(90deg,var(--accent),var(--accent2));
-    box-shadow:0 8px 20px rgba(134,168,255,.25);
-    transition:transform .05s ease
-  }
-  button:active{transform:translateY(1px) scale(.99)}
-  .type{border-right:2px solid var(--accent);white-space:pre-wrap}
-  .tag{display:inline-block;padding:3px 10px;border:1px solid var(--line);
-    border-radius:999px;color:var(--muted);font-size:12px;margin-bottom:8px}
-  footer{color:var(--muted);font-size:12px;text-align:center;padding:10px}
-
-  /* 关键：让丝带在下面，文字在上面 */
-  .ribbon{
-    position:absolute; right:-34px; top:12px;
-    transform:rotate(35deg);
-    background:#24305a; color:#c9d5ff; padding:6px 58px;
-    border:1px solid var(--line);
-    z-index:0; pointer-events:none; /* 不拦截触摸 */
-  }
-  .headcopy{ position:relative; z-index:1; } /* 标题层级更高 */
-
-  /* 小屏优化：缩小丝带 & 调整位置，标题略小一点 */
-  @media (max-width: 480px){
-    .ribbon{ transform:scale(.8) rotate(35deg); right:-52px; top:6px; }
-    h1{ font-size:22px; }
-    .lead{ font-size:16px; }
-  }
+  html,body{ min-height:100%; background:
+    radial-gradient(1000px 600px at 10% -10%, #1b2350 0, transparent 60%),
+    radial-gradient(900px 500px at 110% 10%, #232f5f 0, transparent 60%), var(--bg);
+    color:var(--text); font:16px/1.6 system-ui,-apple-system,Segoe UI,Roboto,PingFang SC,"Microsoft YaHei",sans-serif; margin:0 }
+  .wrap{ width:min(860px,100%); margin:20px auto; display:grid; gap:14px; padding:0 14px }
+  .card{ background:linear-gradient(180deg, rgba(255,255,255,.03), rgba(255,255,255,.01)); border:1px solid var(--line); border-radius:14px; padding:16px; position:relative; overflow:hidden }
+  h1{ margin:0 0 6px; font-size:24px; line-height:1.35 }
+  .lead{ margin:6px 0 0; font-size:18px; font-weight:600; letter-spacing:.2px }
+  .muted{ color:var(--muted); font-size:14px }
+  .row{ display:flex; gap:12px; flex-wrap:wrap }
+  button{ appearance:none; border:none; cursor:pointer; font-weight:700; border-radius:12px; padding:10px 14px; color:#0b1233;
+    background:linear-gradient(90deg,var(--accent),var(--accent2)); box-shadow:0 8px 20px rgba(134,168,255,.25); transition:transform .05s ease }
+  button:active{ transform:translateY(1px) scale(.99) }
+  .type{ border-right:2px solid var(--accent); white-space:pre-wrap }
+  .tag{ display:inline-block; padding:3px 10px; border:1px solid var(--line); border-radius:999px; color:var(--muted); font-size:12px; margin-bottom:8px }
+  footer{ color:var(--muted); font-size:12px; text-align:center; padding:10px }
+  .ribbon{ position:absolute; right:-34px; top:12px; transform:rotate(35deg); background:#24305a; color:#c9d5ff; padding:6px 58px; border:1px solid var(--line); z-index:0; pointer-events:none }
+  .headcopy{ position:relative; z-index:1 }
+  @media (max-width:480px){ .ribbon{ transform:scale(.8) rotate(35deg); right:-52px; top:6px } h1{ font-size:22px } .lead{ font-size:16px } }
 </style>
 </head>
 <body>
@@ -83,9 +55,9 @@
 
 <canvas id="fx" style="position:fixed;inset:0;pointer-events:none"></canvas>
 
-<script>
-  // —— 文案库 —— 
-const QUOTES = [
+<!-- 文案放到 JSON；你只改这里，别改 JS 引号 -->
+<script type="application/json" id="quotes-json">
+[
   "卧槽，瞧瞧，这是谁？是全世界最好的巴zei同学！",
   "巴zei同学年纪轻轻完成人生小目标，该躺！",
   "心即理也。",
@@ -96,12 +68,22 @@ const QUOTES = [
   "巴zei同学值得拥有世界上所有的好东西。",
   "你不会有过不去的坎，因为你的腿不够短。",
   "大方向你已经完事儿了，现在需要的是享受！享受懂吗！"
-];
+]
+</script>
 
+<script>
   const $ = s => document.querySelector(s);
   const elQuote=$("#quote"), elYear=$("#year");
   const btnNew=$("#btnNew"), btnFire=$("#btnFire");
   const canvas=$("#fx"), ctx=canvas.getContext("2d");
+
+  // 安全解析 JSON 文案（避免输入法改引号）
+  let QUOTES=[];
+  try{
+    QUOTES = JSON.parse(document.getElementById('quotes-json').textContent.trim());
+  }catch(e){
+    QUOTES = ["文案解析失败，但你依然很酷。请检查 quotes-json 里的引号是否被改成了奇怪的样式～"];
+  }
 
   function typeText(el, text, speed=18){
     let i=0; el.textContent="";
@@ -116,31 +98,20 @@ const QUOTES = [
     const pick = QUOTES[Math.floor(Math.random()*QUOTES.length)];
     typeText(elQuote, pick);
   }
-  // 事件绑定（有 onclick 兜底，但这也保留）
   btnNew.addEventListener("click", e=>{ e.stopPropagation(); newQuote(); });
 
-  // —— 屏幕适配 —— 
+  // 屏幕适配
   let W=0,H=0, DPR = Math.min(2, devicePixelRatio || 1);
-  function resize(){
-    W=canvas.width=innerWidth*DPR; H=canvas.height=innerHeight*DPR;
-    canvas.style.width="100%"; canvas.style.height="100%";
-  }
+  function resize(){ W=canvas.width=innerWidth*DPR; H=canvas.height=innerHeight*DPR; canvas.style.width="100%"; canvas.style.height="100%"; }
   addEventListener("resize", resize); resize();
 
-  // —— 烟花触发 —— 
-  function pagePos(evt){
-    if(evt.touches && evt.touches[0]) return {x: evt.touches[0].clientX, y: evt.touches[0].clientY};
-    return {x: evt.clientX, y: evt.clientY};
-  }
-  function triggerFire(e){
-    const p = pagePos(e);
-    fireworks(p.x, p.y);
-  }
+  // 烟花
+  function pagePos(evt){ if(evt.touches && evt.touches[0]) return {x: evt.touches[0].clientX, y: evt.touches[0].clientY}; return {x: evt.clientX, y: evt.clientY}; }
+  function triggerFire(e){ const p = pagePos(e); fireworks(p.x, p.y); }
   document.addEventListener("click", triggerFire);
   document.addEventListener("touchstart", triggerFire, {passive:true});
   btnFire.addEventListener("click", e=>{ e.stopPropagation(); fireworks(innerWidth/2, innerHeight/2); });
 
-  // —— 烟花动画 —— 
   const particles=[];
   function fireworks(x,y){
     const cx = x*DPR, cy = y*DPR;
@@ -149,40 +120,24 @@ const QUOTES = [
     for(let i=0;i<N;i++){
       const angle = (Math.PI*2) * (i/N) + Math.random()*0.2;
       const speed = 2 + Math.random()*4;
-      particles.push({
-        x: cx, y: cy,
-        vx: Math.cos(angle)*speed,
-        vy: Math.sin(angle)*speed,
-        life: 60 + Math.random()*20,
-        color: colors[i%colors.length],
-        size: 2 + Math.random()*2
-      });
+      particles.push({ x:cx, y:cy, vx:Math.cos(angle)*speed, vy:Math.sin(angle)*speed, life:60+Math.random()*20, color:colors[i%colors.length], size:2+Math.random()*2 });
     }
     particles.push({x:cx,y:cy,vx:0,vy:0,life:25,color:"#ffffff",size:4});
   }
-
   function tick(){
     ctx.clearRect(0,0,W,H);
     for(let i=particles.length-1;i>=0;i--){
       const p=particles[i];
-      p.x += p.vx; p.y += p.vy;
-      p.vy += 0.03*DPR;
-      p.vx *= 0.99; p.vy *= 0.99;
-      p.life--;
+      p.x += p.vx; p.y += p.vy; p.vy += 0.03*DPR; p.vx *= 0.99; p.vy *= 0.99; p.life--;
       ctx.globalAlpha = Math.max(p.life/60, 0);
-      ctx.fillStyle = p.color;
-      ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
+      ctx.fillStyle = p.color; ctx.beginPath(); ctx.arc(p.x, p.y, p.size, 0, Math.PI*2); ctx.fill();
       if(p.life<=0) particles.splice(i,1);
     }
-    ctx.globalAlpha = 1;
-    requestAnimationFrame(tick);
+    ctx.globalAlpha = 1; requestAnimationFrame(tick);
   }
   tick();
 
-  (function init(){
-    elYear.textContent = new Date().getFullYear();
-    newQuote();
-  })();
+  (function init(){ elYear.textContent = new Date().getFullYear(); newQuote(); })();
 </script>
 </body>
 </html>

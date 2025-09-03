@@ -321,6 +321,33 @@
     100% { opacity: 0.7; }
   }
   
+  /* 音乐控制 */
+  .music-control {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    z-index: 1000;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    width: 50px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+  }
+  
+  .music-control i {
+    font-size: 24px;
+    color: var(--accent);
+  }
+  
+  .music-control.muted i {
+    color: var(--muted);
+  }
+  
   /* 弹窗样式 */
   .modal {
     display: none;
@@ -393,8 +420,19 @@
       width: 60px;
       height: 60px;
     }
+    .music-control {
+      bottom: 10px;
+      right: 10px;
+      width: 40px;
+      height: 40px;
+    }
+    .music-control i {
+      font-size: 20px;
+    }
   }
 </style>
+<!-- 引入字体图标 -->
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 <div class="wrap">
@@ -421,7 +459,7 @@
   <div id="game-area" class="card">
     <div class="tag">⚔️ 大战emo怪</div>
     <div id="health-container">
-      <div id="health-text">HP: 1000/1000</div>
+      <div id="health-text">HP: 8888/8888</div>
       <div id="health-bar">
         <div id="health"></div>
       </div>
@@ -439,6 +477,11 @@
 
 <!-- 屠龙宝刀图标 -->
 <div id="sword"></div>
+
+<!-- 音乐控制 -->
+<div id="music-control" class="music-control">
+  <i class="fas fa-volume-up"></i>
+</div>
 
 <!-- 弹窗 -->
 <div id="victory-modal" class="modal">
@@ -486,6 +529,21 @@
 ]
 </script>
 
+<!-- 音频元素 - 使用您提供的GitHub链接 -->
+<audio id="bgm" src="https://github.com/pyx0320/To-the-best-ba-zei/raw/main/bgm_emo%E6%80%AA.mp3" loop preload="auto"></audio>
+
+<audio id="attack-sound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/15/audio_5bdcb6f6e7.mp3?filename=whoosh-6316.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="crit-sound">
+  <source src="https://cdn.pixabay.com/download/audio/2022/03/19/audio_2a5525d600.mp3?filename=power-up-6768.mp3" type="audio/mpeg">
+</audio>
+
+<audio id="victory-sound">
+  <source src="https://cdn.pixabay.com/download/audio/2021/10/25/audio_7b60723d8c.mp3?filename=success-1-6297.mp3" type="audio/mpeg">
+</audio>
+
 <script>
   const $ = s => document.querySelector(s);
   const elQuote = $("#quote"), elYear = $("#year"), elCounter = $("#counter");
@@ -495,6 +553,13 @@
   const sword = $("#sword");
   const victoryModal = $("#victory-modal"), lootModal = $("#loot-modal");
   const buffModal = $("#buff-modal");
+  const musicControl = $("#music-control");
+  
+  // 音频元素
+  const bgm = $("#bgm");
+  const attackSound = $("#attack-sound");
+  const critSound = $("#crit-sound");
+  const victorySound = $("#victory-sound");
   
   // 解析 JSON 文案
   let QUOTES = [];
@@ -506,12 +571,13 @@
 
   // 游戏变量
   let hasSword = false;
-  let monsterHealth = 1000;
-  let maxHealth = 1000;
+  let monsterHealth = 8888;
+  let maxHealth = 8888;
   let typeTimer = null;
   let attackCooldown = false;
   let isMonsterDead = false;
   let hitCount = 0;
+  let isMusicPlaying = false;
   
   // 文案显示管理
   let usedIndices = new Set();
@@ -579,6 +645,9 @@
     btnGetSword.textContent = "已领取屠龙宝刀";
     btnGetSword.disabled = true;
     
+    // 开始播放BGM
+    playBGM();
+    
     // 宝刀跟随鼠标
     document.addEventListener("mousemove", moveSword);
     
@@ -613,7 +682,7 @@
     let isCrit = Math.random() < critChance;
     
     // 计算伤害 (基础伤害 + 随机伤害)
-    let baseDamage = isCrit ? 70 : 35;
+    let baseDamage = isCrit ? 166 : 66;
     let randomDamage = Math.floor(Math.random() * 16);
     let totalDamage = baseDamage + randomDamage;
     
@@ -624,6 +693,13 @@
     // 更新血条
     healthBar.style.width = (monsterHealth / maxHealth * 100) + "%";
     healthText.textContent = `HP: ${monsterHealth}/${maxHealth}`;
+    
+    // 播放音效
+    if (isCrit) {
+      playSound(critSound);
+    } else {
+      playSound(attackSound);
+    }
     
     // 显示伤害数值
     showDamage(totalDamage, isCrit);
@@ -638,6 +714,10 @@
     if (monsterHealth <= 0) {
       isMonsterDead = true;
       updateMonsterFace(true);
+      // 停止BGM
+      pauseBGM();
+      // 播放胜利音效
+      playSound(victorySound);
       setTimeout(() => {
         victoryModal.style.display = "flex";
       }, 500);
@@ -715,6 +795,30 @@
     }
   }
   
+  // 音频控制函数
+  function playBGM() {
+    bgm.volume = 0.5; // 设置音量
+    bgm.play().catch(e => {
+      console.log("自动播放BGM被阻止，需要用户交互");
+    });
+    isMusicPlaying = true;
+    musicControl.classList.remove("muted");
+  }
+  
+  function pauseBGM() {
+    bgm.pause();
+    isMusicPlaying = false;
+    musicControl.classList.add("muted");
+  }
+  
+  function playSound(sound) {
+    sound.currentTime = 0; // 重置音频到开始
+    sound.volume = 0.5; // 设置音量
+    sound.play().catch(e => {
+      console.log("播放音效失败", e);
+    });
+  }
+  
   // 弹窗流程
   $("#confirm-victory").addEventListener("click", () => {
     victoryModal.style.display = "none";
@@ -733,6 +837,8 @@
   
   $("#close-buff").addEventListener("click", () => {
     buffModal.style.display = "none";
+    // 重新开始游戏
+    location.reload();
   });
   
   // 初始化
@@ -749,6 +855,15 @@
     btnGetSword.addEventListener("click", e => { 
       e.stopPropagation(); 
       initSword(); 
+    });
+    
+    // 音乐控制
+    musicControl.addEventListener("click", () => {
+      if (isMusicPlaying) {
+        pauseBGM();
+      } else {
+        playBGM();
+      }
     });
   })();
 </script>
